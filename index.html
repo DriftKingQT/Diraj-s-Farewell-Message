@@ -734,8 +734,8 @@
 
         let app, db, auth, userId = null;
         let cardData = {
-            message: FINAL_FAREWELL_MESSAGE, // Final message is now embedded here
-            is_customized: true // Treat as customized from the start
+            message: FINAL_FAREWELL_MESSAGE, 
+            is_customized: true 
         };
         let saveTimeout = null;
         const SAVE_DELAY = 1500; // 1.5 seconds debounce
@@ -768,7 +768,7 @@
 
         /** Updates the visual state of the card. */
         function updateCardUI() {
-            // Since the card must be RED permanently, we only ensure the RED class is present.
+            // Card must be RED permanently
             myCard.classList.remove('card-green', 'customized-card');
             myCard.classList.add('card-red');
 
@@ -783,8 +783,8 @@
 
         /** Loads data from Firestore */
         async function loadCardData() {
+            // FIX: If config is missing, load embedded data and skip Firestore logic to prevent popups.
             if (Object.keys(firebaseConfig).length === 0 || !db || !userId) {
-                // If config is missing, use embedded data and skip Firestore load.
                 messageInput.value = cardData.message;
                 updateCardUI();
                 return;
@@ -796,12 +796,12 @@
 
                 if (docSnap.exists()) {
                     const loadedData = docSnap.data();
-                    // Load saved data, falling back to embedded message if DB message is missing
+                    // If saved data exists, use it, otherwise use the integrated message.
                     cardData.message = loadedData.message || FINAL_FAREWELL_MESSAGE;
                     cardData.is_customized = loadedData.is_customized;
                 } else {
+                    // If no data exists, we save the embedded message for persistence
                     console.log("No existing card data found. Forcing initial save of embedded message.");
-                    // If no data, force the embedded message to save immediately.
                     await saveCardData(cardData.message, true); 
                 }
                 
@@ -893,7 +893,7 @@
         async function initializeFirebase() {
             if (Object.keys(firebaseConfig).length === 0) {
                 console.warn("Firebase config is missing. App will run in non-persistent (local) mode.");
-                showMessage("Firebase config is missing. Message will not save persistently.", true);
+                // Removed showMessage here to prevent immediate popup
                 
                 await loadCardData();
                 
@@ -958,6 +958,8 @@
             
             // Set status based on whether data saving is possible
             if (Object.keys(firebaseConfig).length === 0) {
+                // Show persistence warning only when they click to edit in a non-persistent environment
+                showMessage("Firebase config is missing. Message will not save persistently.", true); 
                 saveStatusIndicator.textContent = "Editing local copy only.";
                 saveStatusIndicator.classList.remove('text-green-500', 'text-gray-500');
                 saveStatusIndicator.classList.add('text-red-500');
