@@ -271,9 +271,9 @@
 <body class="min-h-screen">
 
     <div class="max-w-4xl w-full">
-        <header class="text-center mb-10 p-4 rounded-xl bg-gray-200 shadow-md">
-            <!-- Updated Title -->
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2">IN & OUT Board</h1>
+        <!-- HEADER ELEMENT TO BE MODIFIED -->
+        <header class="text-center mb-10 p-4 rounded-xl shadow-md" style="background-color: #3643BA;">
+            <h1 class="text-3xl sm:text-4xl font-extrabold mb-2" style="color: white;">IN & OUT Board</h1>
         </header>
 
         <!-- Board Container - Updated to look like a metal panel structure -->
@@ -727,11 +727,6 @@
         const saveStatusIndicator = document.getElementById('save-status-indicator');
         
         // --- UTILITY FUNCTIONS ---
-
-        /** Shows temporary message box for feedback. (Function kept simple, but errors won't occur now) */
-        function showMessage(text, isError = false) {
-            // ... (showMessage function removed as no errors will occur in this simplified version)
-        }
 
         /** Updates the visual state of the card. */
         function updateCardUI() {
