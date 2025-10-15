@@ -699,6 +699,7 @@
                 <!-- NEW INNER PANEL FOR VISUAL SEPARATION -->
                 <div class="message-panel">
                     <!-- Textarea is now inside the light panel -->
+                    <!-- Updated to use the initial cardData message (which now holds the final message) -->
                     <textarea id="farewell-message-input" rows="8" class="w-full p-4 border-2 rounded-lg focus:ring-green-600 focus:border-green-600 transition-colors" placeholder="Write your unique farewell message here..."></textarea>
                     
                     <div class="flex justify-center mt-4 text-sm font-semibold" id="auto-save-status">
@@ -728,13 +729,13 @@
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
-        // ** NEW: Default Farewell Message **
-        const DEFAULT_FAREWELL_MESSAGE = "This is not goodbye, but see you later! Thank you all for the incredible memories, laughs, and collaboration over the years. I'll miss this team, but I'm excited for what's next. Keep in touch!";
+        // ** INTEGRATED FAREWELL MESSAGE **
+        const FINAL_FAREWELL_MESSAGE = "This is not goodbye, but see you later! Thank you all for the incredible memories, laughs, and collaboration over the years. I'll miss this team, but I'm excited for what's next. Keep in touch!";
 
         let app, db, auth, userId = null;
         let cardData = {
-            message: DEFAULT_FAREWELL_MESSAGE, // Pre-filled message
-            is_customized: false // This flag is now irrelevant for color, but kept for data integrity
+            message: FINAL_FAREWELL_MESSAGE, // Final message is now embedded here
+            is_customized: true // Treat as customized from the start
         };
         let saveTimeout = null;
         const SAVE_DELAY = 1500; // 1.5 seconds debounce
@@ -768,7 +769,6 @@
         /** Updates the visual state of the card. */
         function updateCardUI() {
             // Since the card must be RED permanently, we only ensure the RED class is present.
-            // The is_customized flag is ignored for visual updates.
             myCard.classList.remove('card-green', 'customized-card');
             myCard.classList.add('card-red');
 
@@ -783,8 +783,10 @@
 
         /** Loads data from Firestore */
         async function loadCardData() {
-            if (!db || !userId) {
-                console.error("Firestore not initialized or user not authenticated.");
+            if (Object.keys(firebaseConfig).length === 0 || !db || !userId) {
+                // If config is missing, use embedded data and skip Firestore load.
+                messageInput.value = cardData.message;
+                updateCardUI();
                 return;
             }
 
@@ -794,25 +796,16 @@
 
                 if (docSnap.exists()) {
                     const loadedData = docSnap.data();
-                    cardData.message = loadedData.message || DEFAULT_FAREWELL_MESSAGE;
-                    cardData.is_customized = loadedData.is_customized || false;
-                    
-                    // If message is cleared, ensure message input starts blank for easy typing
-                    if (cardData.message.length === 0) {
-                        cardData.message = DEFAULT_FAREWELL_MESSAGE;
-                        cardData.is_customized = false;
-                    }
-                    
-                    console.log("Card data loaded successfully:", cardData);
+                    // Load saved data, falling back to embedded message if DB message is missing
+                    cardData.message = loadedData.message || FINAL_FAREWELL_MESSAGE;
+                    cardData.is_customized = loadedData.is_customized;
                 } else {
-                    console.log("No existing card data found. Initializing with default message and saving.");
-                    
-                    // If no data, we use the default message and force a save (no delay needed now)
-                    cardData.message = DEFAULT_FAREWELL_MESSAGE;
+                    console.log("No existing card data found. Forcing initial save of embedded message.");
+                    // If no data, force the embedded message to save immediately.
                     await saveCardData(cardData.message, true); 
                 }
-
-                updateCardUI(); // Ensure RED is applied visually
+                
+                updateCardUI(); 
                 messageInput.value = cardData.message;
 
             } catch (error) {
@@ -823,16 +816,16 @@
 
         /** Saves data to Firestore (Auto-Save logic) */
         async function saveCardData(message, isInitialSave = false) {
-            if (!db || !userId) {
-                console.error("Firestore not initialized or user not authenticated.");
+            if (Object.keys(firebaseConfig).length === 0 || !db || !userId) {
+                console.warn("Skipping save: Firestore not configured.");
                 if (!isInitialSave) {
-                    saveStatusIndicator.textContent = "Error: Not connected.";
+                    saveStatusIndicator.textContent = "Local copy (not saved).";
+                    saveStatusIndicator.classList.remove('text-gray-500', 'text-yellow-500');
                     saveStatusIndicator.classList.add('text-red-500');
                 }
                 return false;
             }
 
-            // Update is_customized flag based on message content
             cardData.is_customized = message.length > 0;
 
             if (!isInitialSave) {
@@ -854,7 +847,7 @@
                     saveStatusIndicator.classList.remove('text-yellow-500');
                     saveStatusIndicator.classList.add('text-green-500');
                 }
-                updateCardUI(); // Still call to ensure card name/style is right
+                updateCardUI(); 
                 return true;
 
             } catch (error) {
@@ -885,10 +878,13 @@
                  saveStatusIndicator.classList.remove('text-green-500', 'text-red-500');
                  saveStatusIndicator.classList.add('text-gray-500');
             }
-
-            saveTimeout = setTimeout(async () => {
-                await saveCardData(currentMessage);
-            }, SAVE_DELAY);
+            
+            // Only debounce and save if Firebase is available
+            if (Object.keys(firebaseConfig).length !== 0) {
+                saveTimeout = setTimeout(async () => {
+                    await saveCardData(currentMessage);
+                }, SAVE_DELAY);
+            }
         }
         
 
@@ -896,9 +892,19 @@
         /** Initializes Firebase and sets up Auth */
         async function initializeFirebase() {
             if (Object.keys(firebaseConfig).length === 0) {
-                showMessage("Firebase config is missing. App will not save data persistently.", true);
+                console.warn("Firebase config is missing. App will run in non-persistent (local) mode.");
+                showMessage("Firebase config is missing. Message will not save persistently.", true);
+                
+                await loadCardData();
+                
+                if (messageInput) {
+                    messageInput.addEventListener('input', autoSaveMessage);
+                    saveStatusIndicator.textContent = "Editing local copy only.";
+                    saveStatusIndicator.classList.add('text-red-500');
+                }
                 return;
             }
+
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
@@ -947,20 +953,25 @@
 
         /** Shows the interactive card view */
         window.showCard = function() {
-            if (!db) {
-                showMessage("Please wait for the app to initialize.", true);
-                return;
-            }
             messageInput.value = cardData.message;
             overlay.classList.add('active');
-            saveStatusIndicator.textContent = cardData.message.length > 0 ? "Loaded from Board" : "Ready to type";
-            saveStatusIndicator.classList.remove('text-green-500', 'text-red-500');
-            saveStatusIndicator.classList.add('text-gray-500');
+            
+            // Set status based on whether data saving is possible
+            if (Object.keys(firebaseConfig).length === 0) {
+                saveStatusIndicator.textContent = "Editing local copy only.";
+                saveStatusIndicator.classList.remove('text-green-500', 'text-gray-500');
+                saveStatusIndicator.classList.add('text-red-500');
+            } else {
+                saveStatusIndicator.textContent = cardData.message.length > 0 ? "Loaded from Board" : "Ready to type";
+                saveStatusIndicator.classList.remove('text-green-500', 'text-red-500');
+                saveStatusIndicator.classList.add('text-gray-500');
+            }
         }
 
         /** Hides the interactive card view */
         window.hideCard = function() {
-            if (saveTimeout) {
+            // Only attempt to save if firebase is configured
+            if (Object.keys(firebaseConfig).length !== 0 && saveTimeout) {
                 clearTimeout(saveTimeout);
                 saveCardData(messageInput.value.trim()); 
             }
