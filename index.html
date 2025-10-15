@@ -28,8 +28,9 @@
         }
 
         @keyframes modal-zoom-in {
-            from { transform: scale(0.8) translate(-50%, -100%); opacity: 0; }
-            to { transform: scale(1.05) translate(-50%, -100%); opacity: 1; }
+            /* Adjusted initial transform to account for header bar being outside the container */
+            from { transform: scale(0.8); opacity: 0; } 
+            to { transform: scale(1.05); opacity: 1; }
         }
 
         /* Style for the main metallic board panel - Darker, industrial look */
@@ -158,7 +159,10 @@
             visibility: hidden;
             opacity: 0;
             transition: opacity 0.3s, visibility 0.3s;
-            min-height: 100vh; /* ENSURE full viewport height is used for centering */
+            min-height: 100vh; 
+            /* FIX: Use grid with place-items to guarantee perfect vertical centering */
+            display: grid; 
+            place-items: center;
         }
         #interactive-card-overlay.active {
             visibility: visible;
@@ -201,7 +205,9 @@
             position: absolute;
             top: 0;
             left: 50%;
-            transform: translate(-50%, -100%); /* Move up and center horizontally */
+            /* FIX: Adjusted translate to remove the redundant -100% vertical offset, as grid centering handles this.
+               The animation keyframe handles the zoom/lift effect. */
+            transform: translateX(-50%); 
             
             /* Sizing and Styling for the header bar */
             width: 130%; 
@@ -689,7 +695,7 @@
     </div>
 
     <!-- Interactive Card Overlay/Modal -->
-    <div id="interactive-card-overlay" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50" onclick="hideCard(false)">
+    <div id="interactive-card-overlay" class="fixed inset-0 bg-black bg-opacity-90 z-50" onclick="hideCard(false)">
         <!-- T-SHAPE CONTAINER (Single background and shadow) -->
         <!-- Stop click event from bubbling up and closing the modal when clicking inside -->
         <div class="t-shape-container shadow-2xl transform transition-all duration-300 scale-100" onclick="event.stopPropagation()">
