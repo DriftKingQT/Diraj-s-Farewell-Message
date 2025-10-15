@@ -38,7 +38,8 @@
             background-color: #31353a; /* Deep Industrial Metal Color (Darker) */
             border: 2px solid #282b2f; 
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(255, 255, 255, 0.05); /* Deeper shadow */
-            grid-template-columns: repeat(3, minmax(0, 1fr)); /* Use 3 main columns */
+            /* UPDATED: Changed grid to 4 columns */
+            grid-template-columns: repeat(4, minmax(0, 1fr)); 
             gap: 0.3rem; /* Tighter spacing */
             padding: 1rem;
         }
@@ -299,9 +300,10 @@
         </header>
 
         <!-- Board Container - Updated to look like a metal panel structure -->
-        <div id="farewell-board" class="grid grid-cols-3 p-6 rounded-xl">
+        <!-- UPDATED: grid-cols-3 changed to grid-cols-4 -->
+        <div id="farewell-board" class="grid grid-cols-4 p-6 rounded-xl">
             
-            <!-- Column 1 (14 Cards) -->
+            <!-- Column 1 (11 Cards) -->
             <div class="board-col">
                 <div class="board-card-container">
                     <div class="board-card card-green">
@@ -361,7 +363,6 @@
                         <span class="fire-emoji">🔥</span>
                     </div>
                 </div>
-                <!-- START NEW CARDS COL 1 -->
                 <div class="board-card-container">
                     <div class="board-card card-green">
                         <span class="card-icon icon-green">
@@ -407,37 +408,9 @@
                         <span class="fire-emoji">🔥</span>
                     </div>
                 </div>
-                <div class="board-card-container">
-                    <div class="board-card card-green">
-                        <span class="card-icon icon-green">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
-                        </span>
-                        <span class="name-text">NEVIN</span>
-                        <span class="fire-emoji">🔥</span>
-                    </div>
-                </div>
-                 <div class="board-card-container">
-                    <div class="board-card card-green">
-                        <span class="card-icon icon-green">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
-                        </span>
-                        <span class="name-text">SIDDESHWARA</span>
-                        <span class="fire-emoji">🔥</span>
-                    </div>
-                </div>
-                 <div class="board-card-container">
-                    <div class="board-card card-green">
-                        <span class="card-icon icon-green">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
-                        </span>
-                        <span class="name-text">GOKUL</span>
-                        <span class="fire-emoji">🔥</span>
-                    </div>
-                </div>
-                <!-- END NEW CARDS COL 1 -->
             </div>
 
-            <!-- Column 2 (14 Cards) -->
+            <!-- Column 2 (11 Cards) -->
             <div class="board-col">
                 <div class="board-card-container">
                     <div class="board-card card-green">
@@ -493,7 +466,6 @@
                         <span class="fire-emoji">🔥</span>
                     </div>
                 </div>
-                <!-- START NEW CARDS COL 2 -->
                 <div class="board-card-container">
                     <div class="board-card card-green">
                         <span class="card-icon icon-green">
@@ -539,37 +511,9 @@
                         <span class="fire-emoji">🔥</span>
                     </div>
                 </div>
-                <div class="board-card-container">
-                    <div class="board-card card-green">
-                        <span class="card-icon icon-green">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
-                        </span>
-                        <span class="name-text">THARUN</span>
-                        <span class="fire-emoji">🔥</span>
-                    </div>
-                </div>
-                <div class="board-card-container">
-                    <div class="board-card card-green">
-                        <span class="card-icon icon-green">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
-                        </span>
-                        <span class="name-text">SHASHANK</span>
-                        <span class="fire-emoji">🔥</span>
-                    </div>
-                </div>
-                <div class="board-card-container">
-                    <div class="board-card card-green">
-                        <span class="card-icon icon-green">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
-                        </span>
-                        <span class="name-text">PAVITHRA</span>
-                        <span class="fire-emoji">🔥</span>
-                    </div>
-                </div>
-                <!-- END NEW CARDS COL 2 -->
             </div>
 
-            <!-- Column 3 (13 Cards) -->
+            <!-- Column 3 (10 Cards) -->
             <div class="board-col">
                 <div class="board-card-container">
                     <div class="board-card card-green">
@@ -625,7 +569,6 @@
                         <span class="fire-emoji">🔥</span>
                     </div>
                 </div>
-                <!-- START NEW CARDS COL 3 -->
                 <div class="board-card-container">
                     <div class="board-card card-green">
                         <span class="card-icon icon-green">
@@ -662,6 +605,55 @@
                         <span class="fire-emoji">🔥</span>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Column 4 (10 Cards) -->
+            <div class="board-col">
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">NEHA R</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">AMIT P</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">PRIYA M</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">ROHAN K</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SAMUEL</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
                 <div class="board-card-container">
                     <div class="board-card card-green">
                         <span class="card-icon icon-green">
@@ -680,16 +672,33 @@
                         <span class="fire-emoji">🔥</span>
                     </div>
                 </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">ANJALI</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
                  <div class="board-card-container">
                     <div class="board-card card-green">
                         <span class="card-icon icon-green">
                             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
                         </span>
-                        <span class="name-text">SAMUEL</span>
+                        <span class="name-text">ARJUN</span>
                         <span class="fire-emoji">🔥</span>
                     </div>
                 </div>
-                <!-- END NEW CARDS COL 3 -->
+                 <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">BHUMATI</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
