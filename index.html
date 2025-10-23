@@ -28,9 +28,9 @@
         }
 
         @keyframes modal-zoom-in {
-            /* Adjusted initial transform to account for header bar being outside the container */
-            from { transform: scale(0.8); opacity: 0; } 
-            to { transform: scale(1.05); opacity: 1; }
+            /* NEW: Starts lower (translateY(100px)) and slides up to the center (translateY(0)) */
+            from { transform: scale(0.6) translateY(100px); opacity: 0; } 
+            to { transform: scale(1.05) translateY(0); opacity: 1; }
         }
 
         /* Style for the main metallic board panel - Darker, industrial look */
@@ -94,7 +94,7 @@
 
         /* NEW: Animation class for the "lift" */
         .board-card.lifting {
-            transform: translateY(-5px); /* Move card up slightly out of the slot */
+            transform: translateY(-15px); /* INCREASED LIFT for more noticeability */
             transition: transform 0.2s ease-out;
         }
 
@@ -733,7 +733,7 @@
                     <!-- Textarea is now inside the light panel -->
                     <textarea id="farewell-message-input" rows="8" class="w-full p-4 border-2 rounded-lg focus:ring-green-600 focus:border-green-600 transition-colors" placeholder="Write your unique farewell message here..."></textarea>
                     
-                    <div class="flex justify-center mt-4 text-sm font-semibold" id="auto-save-status">
+                    <div class="flex justify-center mt-4 text-sm font-semibold whitespace-pre-wrap text-center" id="auto-save-status">
                         <!-- Status indicator is now purely for local feedback -->
                         <span id="save-status-indicator" class="text-gray-500">Message ready!</span>
                     </div>
@@ -784,9 +784,15 @@
             
             // Disable the textarea since the message is final and shouldn't be edited/saved
             messageInput.disabled = true;
-            saveStatusIndicator.textContent = "Your farewell message is now visible!";
+            
+            // --- UPDATED SIGNATURE TEXT ---
+            saveStatusIndicator.textContent = "Regards,\nDIRAJ KAVRAPPA MM"; // Use \n for line break
+            // --- END UPDATED TEXT ---
+            
+            // Applying styles for visibility
             saveStatusIndicator.classList.remove('text-gray-500');
-            saveStatusIndicator.classList.add('text-green-500');
+            saveStatusIndicator.classList.add('text-white'); // Changed to white for better visibility
+            saveStatusIndicator.classList.add('font-bold');
         }
 
         /** Hides the interactive card view */
