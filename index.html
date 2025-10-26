@@ -6,21 +6,32 @@
     <title>IN & OUT Board</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Use Inter font -->
     <style>
+        /* Base and Font */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #555c65; /* Dark wall gray */
+            background-color: #555c65;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            padding-top: 3rem;
-            padding-bottom: 3rem;
+            padding: 3rem 0;
         }
         
-        /* === KEYFRAME ANIMATIONS === */
+        /* Color Variables (Used for consistent green/red theme) */
+        :root {
+            --board-metal: #31353a;
+            --slot-recess: #282b2f;
+            --modal-green: #29a366;
+            --primary-green-light: #34d399;
+            --primary-green-dark: #10b981;
+            --primary-red-light: #ef4444;
+            --primary-red-dark: #dc2626;
+            --header-blue: #3643BA;
+        }
+
+        /* === KEYFRAMES === */
 
         @keyframes flicker {
             0%, 100% { opacity: 1; text-shadow: 0 0 3px rgba(255, 100, 0, 0.5); }
@@ -28,16 +39,828 @@
         }
 
         @keyframes modal-zoom-in {
-            /* NEW: Starts lower (translateY(100px)) and slides up to the center (translateY(0)) */
             from { transform: scale(0.6) translateY(100px); opacity: 0; } 
             to { transform: scale(1.05) translateY(0); opacity: 1; }
         }
 
-        /* Style for the main metallic board panel - Darker, industrial look */
+        /* === BOARD LAYOUT === */
+
         #farewell-board {
-            background-color: #31353a; /* Deep Industrial Metal Color (Darker) */
-            border: 2px solid #282b2f; 
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(255, 255, 255, 0.05); /* Deeper shadow */
+            background-color: var(--board-metal);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(255, 255, 255, 0.05);
+            grid-template-columns: repeat(4, minmax(0, 1fr)); 
+            gap: 0.3rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
+        }
+        
+        .board-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        
+        /* Slot Holder (Recessed Metal Look) */
+        .board-card-container {
+            height: 40px;
+            background-color: var(--slot-recess);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), inset 0 -1px 3px rgba(255, 255, 255, 0.02);
+            overflow: hidden; 
+        }
+
+        /* Name Tag Card (Inserted Object) */
+        .board-card {
+            width: 90%; 
+            height: 80%;
+            padding: 0 8px;
+            color: white; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.5); 
+            transition: all 0.2s ease-in-out;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        /* Card Interactions */
+        .board-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8), inset 0 0 8px rgba(255, 255, 255, 0.7);
+        }
+
+        .board-card.lifting {
+            transform: translateY(-15px);
+            transition: transform 0.2s ease-out;
+        }
+
+        /* Status Colors */
+        .card-green { background: linear-gradient(145deg, var(--primary-green-light), var(--primary-green-dark)); }
+        .card-red { background: linear-gradient(145deg, var(--primary-red-light), var(--primary-red-dark)); }
+        
+        /* Icon Colors */
+        .card-icon { box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5); flex-shrink: 0; }
+        .icon-red { background-color: var(--primary-red-dark); }
+        .icon-green { background-color: var(--primary-green-dark); }
+        
+        .fire-emoji { animation: flicker 1.5s infinite alternate; }
+
+        /* === MODAL OVERLAY === */
+
+        #interactive-card-overlay {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            min-height: 100vh; 
+            display: grid; 
+            place-items: center;
+        }
+        #interactive-card-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Modal Container */
+        .t-shape-container {
+            max-width: 360px;
+            width: 100%;
+            background: var(--modal-green); 
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
+            color: white; 
+            overflow: visible;
+            position: relative;
+            transition: transform 0.3s ease-out, opacity 0.3s;
+        }
+        #interactive-card-overlay.active .t-shape-container {
+            animation: modal-zoom-in 0.3s ease-out forwards;
+        }
+
+        /* Modal Header (The T-bar) */
+        .modal-header {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%); 
+            width: 130%; 
+            padding: 1.5rem 2rem; 
+            background-color: var(--modal-green); 
+            z-index: 10;
+            box-shadow: 0 4px 0 0 var(--modal-green); 
+        }
+        .modal-header h2 { font-size: 2rem; }
+
+        /* Modal Body (Lower Block) */
+        .modal-body {
+            padding: 1.8rem 1rem 1.8rem 1rem; 
+            margin: 0 auto; 
+            width: 90%; 
+            padding-top: 3rem; 
+        }
+        
+        /* Message Panel/Textarea Styling */
+        .message-panel, #farewell-message-input {
+            background-color: var(--modal-green); 
+            color: white; 
+            border-color: #e5e7eb;
+        }
+        #farewell-message-input::placeholder { color: rgba(255, 255, 255, 0.7); }
+
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="max-w-4xl w-full">
+        <!-- HEADER -->
+        <header class="text-center mb-10 p-4 rounded-xl shadow-md" style="background-color: var(--header-blue);">
+            <h1 class="text-3xl sm:text-4xl font-extrabold mb-2" style="color: white;">IN & OUT Board</h1>
+        </header>
+
+        <!-- BOARD CONTAINER -->
+        <div id="farewell-board" class="grid grid-cols-4 p-6 rounded-xl">
+            
+            <!-- Column 1 (11 Cards) -->
+            <div class="board-col">
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">KRUTHIKAA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SAURAV</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <!-- YOUR INTERACTIVE CARD (DIRAJ) -->
+                <div class="board-card-container">
+                    <div id="myCard" class="board-card card-green" onclick="showCard()">
+                        <span id="myCardIcon" class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span id="myCardName" class="font-bold name-text">DIRAJ</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">RAJESH</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">TRIPTA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SITARA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">DAVID</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">PAVAN</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">ABRAHAM</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SHREE</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">VYSNAVI</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2 (11 Cards) -->
+            <div class="board-col">
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">ANAGHA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">NIRANJAN</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">PRADEEP</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">BIMAL</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">DHANUSH</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">MUTAHIR</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">NAGALAMBIKA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">DEEPAK</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SAFWAN</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">DATTU</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">JEEVA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3 (10 Cards) -->
+            <div class="board-col">
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">JESMY</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">CHETAN</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SONALI</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">RAJESH A</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">HARSHIK</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                 <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">TEJAL</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">AKHIL</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">NAYANA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SPRIHA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">NIKITHA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Column 4 (10 Cards) -->
+            <div class="board-col">
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">NEHA R</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">AMIT P</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">PRIYA M</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">ROHAN K</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SAMUEL</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">SANYA</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">ANGEL</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">ANJALI</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                 <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">ARJUN</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+                 <div class="board-card-container">
+                    <div class="board-card card-green">
+                        <span class="card-icon icon-green">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                        </span>
+                        <span class="name-text">BHUMATI</span>
+                        <span class="fire-emoji">🔥</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Card Overlay/Modal -->
+    <div id="interactive-card-overlay" class="fixed inset-0 bg-black bg-opacity-90 z-50" onclick="hideCard(true)">
+        <!-- T-SHAPE CONTAINER (Single background and shadow) -->
+        <div class="t-shape-container shadow-2xl transform transition-all duration-300 scale-100" onclick="event.stopPropagation()">
+            
+            <!-- MODAL HEADER (The wide bar, layered on top) -->
+            <div class="modal-header">
+                <h2 class="text-3xl font-bold mb-0">
+                    <span class="header-status-icon">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m-8-8h16"></path></svg>
+                    </span>
+                    DIRAJ
+                    <span class="header-icon">🔥</span>
+                </h2>
+            </div>
+
+            <!-- MODAL BODY (Main Content, lower block) -->
+            <div class="modal-body">
+                <p class="mb-6" style="color: white;">Dear Team,</p>
+                
+                <!-- NEW INNER PANEL FOR VISUAL SEPARATION -->
+                <div class="message-panel">
+                    <textarea id="farewell-message-input" rows="8" class="w-full p-4 border-2 rounded-lg focus:ring-green-600 focus:border-green-600 transition-colors" placeholder=""></textarea>
+                    
+                    <div class="flex flex-col items-center mt-4 text-sm font-semibold whitespace-pre-wrap text-center">
+
+                        <!-- LLM and TTS Interaction Buttons -->
+                        <div class="flex space-x-4 mb-4">
+                            <button id="generate-rhyme-btn" class="bg-indigo-600 text-white p-3 rounded-xl shadow-md hover:bg-indigo-700 transition-colors flex items-center">
+                                <span class="text-xl mr-2">✨</span> Generate a Rhyme
+                            </button>
+                            <button id="read-message-btn" class="bg-yellow-500 text-gray-900 p-3 rounded-xl shadow-md hover:bg-yellow-600 transition-colors flex items-center">
+                                <span class="text-xl mr-2">🔊</span> Read My Message
+                            </button>
+                        </div>
+                        
+                        <!-- Rhyme Output Display -->
+                        <div id="rhyme-output" class="w-full text-left" style="display: none;">
+                            <div class="loader-container"></div>
+                        </div>
+                        
+                        <!-- Signature/Status Display -->
+                        <span id="save-status-indicator" class="text-white font-bold text-lg mt-4"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box (for error/success feedback) -->
+    <div id="message-box" class="fixed bottom-4 right-4 p-4 rounded-lg shadow-xl text-white transition-opacity duration-300 opacity-0 z-50" style="min-width: 250px;"></div>
+
+    <!-- Local JavaScript -->
+    <script>
+        // ** INTEGRATED FAREWELL MESSAGE **
+        const FINAL_FAREWELL_MESSAGE = "This is not goodbye, but see you later! Thank you all for the incredible memories, laughs, and collaboration over the years. I'll miss this team, but I'm excited for what's next. Keep in touch!\n\nRegards,\nDIRAJ KAVRAPPA MM";
+        
+        // --- API KEY and URL ---
+        const apiKey = ""; 
+        const GEMINI_FLASH_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const GEMINI_TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+        // --- DOM Elements ---
+        const myCard = document.getElementById('myCard');
+        const overlay = document.getElementById('interactive-card-overlay');
+        const messageInput = document.getElementById('farewell-message-input');
+        const rhymeOutput = document.getElementById('rhyme-output');
+        const generateRhymeBtn = document.getElementById('generate-rhyme-btn');
+        const readMessageBtn = document.getElementById('read-message-btn');
+        const saveStatusIndicator = document.getElementById('save-status-indicator');
+
+        // --- UTILITY FUNCTIONS (Audio/API) ---
+
+        function showMessageBox(message, type = 'success') {
+            const box = document.getElementById('message-box');
+            box.textContent = message;
+            box.style.backgroundColor = type === 'success' ? '#10b981' : '#ef4444';
+            box.style.opacity = '1';
+            setTimeout(() => { box.style.opacity = '0'; }, 3000);
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binary_string = window.atob(base64);
+            const bytes = new Uint8Array(binary_string.length);
+            for (let i = 0; i < binary_string.length; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function pcmToWav(pcmData, sampleRate) {
+            const numChannels = 1;
+            const bytesPerSample = 2;
+            const buffer = new ArrayBuffer(44 + pcmData.byteLength);
+            const view = new DataView(buffer);
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + pcmData.byteLength, true);
+            writeString(view, 8, 'WAVE');
+
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numChannels * bytesPerSample, true);
+            view.setUint16(32, numChannels * bytesPerSample, true);
+            view.setUint16(34, bytesPerSample * 8, true);
+
+            writeString(view, 36, 'data');
+            view.setUint32(40, pcmData.byteLength, true);
+
+            const dataView = new Int16Array(pcmData);
+            for (let i = 0; i < dataView.length; i++) {
+                view.setInt16(44 + i * 2, dataView[i], true);
+            }
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        async function fetchWithRetry(url, payload, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) return response;
+                    if (response.status === 429 && i < retries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                        continue;
+                    }
+                    throw new Error(`API request failed with status ${response.status}`);
+                } catch (error) {
+                    if (i < retries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                        continue;
+                    }
+                    throw error;
+                }
+            }
+        }
+
+        // --- GEMINI API INTERACTIONS ---
+
+        async function generateRhyme() {
+            rhymeOutput.style.display = 'block';
+            rhymeOutput.innerHTML = '<div class="loader"></div>';
+            generateRhymeBtn.disabled = true;
+
+            const systemPrompt = "Rewrite the following professional farewell message as a short, witty, and heartwarming four-line rhyming poem. Do not include any introductory or concluding remarks, just the four lines of the poem.";
+            const userQuery = `Farewell Message: "${FINAL_FAREWELL_MESSAGE}"`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const response = await fetchWithRetry(GEMINI_FLASH_API_URL, payload);
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Could not generate a rhyme. Please try again.";
+                
+                rhymeOutput.innerHTML = text.replace(/\n/g, '<br>');
+                showMessageBox('Rhyme generated!', 'success');
+
+            } catch (error) {
+                console.error("Rhyme generation failed:", error);
+                rhymeOutput.innerHTML = "Error: Failed to connect to the generator.";
+                showMessageBox('Rhyme generation failed.', 'error');
+            } finally {
+                generateRhymeBtn.disabled = false;
+            }
+        }
+
+        async function readMessage() {
+            readMessageBtn.disabled = true;
+            readMessageBtn.innerHTML = '<div class="loader"></div>';
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: `Say this message in a friendly, cheerful tone: ${FINAL_FAREWELL_MESSAGE}` }]
+                }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } }
+                    }
+                },
+                model: "gemini-2.5-flash-preview-tts"
+            };
+
+            try {
+                const response = await fetchWithRetry(GEMINI_TTS_API_URL, payload);
+                const result = await response.json();
+                
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+
+                if (audioData && mimeType && mimeType.startsWith("audio/L16")) {
+                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
+                    
+                    const pcmData = base64ToArrayBuffer(audioData);
+                    const wavBlob = pcmToWav(pcmData, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                    showMessageBox('Playing farewell message!', 'success');
+                } else {
+                    throw new Error("TTS API returned invalid or missing audio data.");
+                }
+
+            } catch (error) {
+                console.error("TTS generation failed:", error);
+                showMessageBox('Audio generation failed.', 'error');
+            } finally {
+                readMessageBtn.disabled = false;
+                readMessageBtn.innerHTML = '<span class="text-xl mr-2">🔊</span> Read My Message';
+            }
+        }
+
+        // --- CARD STATE MANAGEMENT ---
+
+        function setCardToRed() {
+            myCard.classList.remove('card-green');
+            myCard.classList.add('card-red');
+            myCard.querySelector('.card-icon').classList.remove('icon-green');
+            myCard.querySelector('.card-icon').classList.add('icon-red');
+            myCard.style.border = '2px solid #fca5a5'; 
+        }
+
+        function setCardToGreen() {
+            myCard.classList.remove('card-red');
+            myCard.classList.add('card-green');
+            myCard.querySelector('.card-icon').classList.remove('icon-red');
+            myCard.querySelector('.card-icon').classList.add('icon-green');
+            myCard.style.border = '2px solid #6ee7b7'; 
+        }
+
+        window.showCard = function() {
+            myCard.classList.add('lifting');
+            messageInput.value = FINAL_FAREWELL_MESSAGE;
+            
+            setTimeout(() => { overlay.classList.add('active'); }, 50);
+            
+            // Message is final, so disable input
+            messageInput.disabled = true;
+            
+            // Set signature text
+            saveStatusIndicator.textContent = FINAL_FAREWELL_MESSAGE.split('\n\n').pop().trim();
+        }
+
+        window.hideCard = function() {
+            overlay.classList.remove('active');
+            
+            // 1. Change the card color to RED (Actioned/Read)
+            setCardToRed();
+
+            // 2. Remove the lift class after the modal has closed
+            setTimeout(() => { myCard.classList.remove('lifting'); }, 300);
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            // Initial state: GREEN (Unread)
+            setCardToGreen();
+            
+            // Attach API handlers
+            generateRhymeBtn.addEventListener('click', generateRhyme);
+            readMessageBtn.addEventListener('click', readMessage);
+        };
+
+    </script>
+</body>
+</html>
             /* UPDATED: Changed grid to 4 columns */
             grid-template-columns: repeat(4, minmax(0, 1fr)); 
             gap: 0.3rem; /* Tighter spacing */
