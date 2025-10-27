@@ -332,7 +332,8 @@
                 <p class="mb-6" style="color: white;">Dear Team,</p>
                 
                 <div class="message-panel">
-                    <textarea id="farewell-message-input" rows="8" class="w-full p-4 border-2 rounded-lg focus:ring-green-600 focus:border-green-600 transition-colors"></textarea>
+                    <!-- UPDATED: Changed rows="24" back to rows="12" to fit on screen -->
+                    <textarea id="farewell-message-input" rows="12" class="w-full p-4 border-2 rounded-lg focus:ring-green-600 focus:border-green-600 transition-colors"></textarea>
                     
                     <div class="flex flex-col items-center mt-4 text-sm font-semibold whitespace-pre-wrap text-center">
                         <!-- Signature/Status Display -->
@@ -346,7 +347,17 @@
     <!-- Local JavaScript -->
     <script>
         // ** INTEGRATED FAREWELL MESSAGE **
-        const FINAL_FAREWELL_MESSAGE = "This is not goodbye, but see you later! Thank you all for the incredible memories, laughs, and collaboration over the years. I'll miss this team, but I'm excited for what's next. Keep in touch!\n\nRegards,\nDIRAJ KAVRAPPA MM";
+        // FIX: Replaced double-quotes with backticks (`) for multi-line string
+        const FINAL_FAREWELL_MESSAGE = `Its been 4.5 years of an incredible journey filled with memories and learning of all types, 
+I still remember when i approached the welcome desk to ask for a job opportunity, from that point on there were many first time experiences 1st layout change, 1st recruitment, 1st store closure, 1st challenging teammate and 1st store expansion/opening. From an introverted young kid to an adult who can speak publicly with zero hesitation the learning curve has never been this high. 
+
+With all these experiences there is one thing i would miss the most and its you guys, those small interactions we had inside the layouts and those small laughters this is what made my day since the last 4.5 year. 
+
+With that said thanks to everyone who has contributed to my time at DECATHLON directly or indirectly.
+Thank you!
+and 
+ALL THE BEST EVERYONE!!
+`;
         
         // --- DOM Elements ---
         const myCard = document.getElementById('myCard');
@@ -385,7 +396,9 @@
             }, 50); // Short delay to allow animation to start
             
             messageInput.disabled = true; // Message is not editable
-            saveStatusIndicator.textContent = FINAL_FAREWELL_MESSAGE.split('\n\n').pop().trim();
+            
+            // UPDATED: Set the signature text directly as requested
+            saveStatusIndicator.textContent = "REGARDS,\nDIRAJ KAVERAPPA MM";
         }
 
         /** Hides the interactive card view and triggers the color change to RED. */
@@ -408,4 +421,7 @@
     </script>
 </body>
 </html>
+
+
+
 
